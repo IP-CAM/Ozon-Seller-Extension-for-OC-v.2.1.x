@@ -11,7 +11,8 @@ class ControllerFeedOzonSeller extends Controller {
 			
 		$discount_percent = isset($settings['ozon_seller_margin']) ? (int)$settings['ozon_seller_margin'] : '0';
 		$allowedStocksIds = isset($settings['ozon_seller_checked_stocks_ids']) ? $settings['ozon_seller_checked_stocks_ids'] : '0';
-		
+		$priceSteps = isset($settings['ozon_seller_discount_steps']) ? $settings['ozon_seller_discount_steps'] : [];
+
 		$products = $this->model_export_ozon_seller->getProducts($allowedStocksIds);
 		
 		$out = '<?xml version="1.0" encoding="UTF-8"?>' . $this->eol;
@@ -26,7 +27,7 @@ class ControllerFeedOzonSeller extends Controller {
 
 			if($offer_id){
 				$out .= '<offer id="' . $offer_id . '">'. $this->eol;	
-				$price = $this->ApplyMinimumPriceMultiplierOptions($product['price'], $discount_percent);				
+				$price = $this->ApplyMinimumPriceMultiplierOptions($product['price'], $discount_percent, $priceSteps);				
 				$out .= '<price>' . $price . '</price>'. $this->eol;
 				$out .= '<outlets>'. $this->eol;
 				$out .= '<outlet instock="' . $quantity . '" warehouse_name="'.$stockName.'"></outlet>'. $this->eol;			
@@ -45,22 +46,27 @@ class ControllerFeedOzonSeller extends Controller {
 		$this->response->setOutput($out);
 	}
 	
-	function ApplyMinimumPriceMultiplierOptions($product_price, $discount_percent){
+	function ApplyMinimumPriceMultiplierOptions($product_price, $discount_percent, $priceSteps){
 		
-		$priceSteps = [
-			'500' => '2.8', //Если менее 500 руб, то * цену на 2.8
-			'1000' => '2.2' //Если менее 1000 руб, то * цену на 2.2	
-		];
+		//Пример priceSteps
+		//$priceSteps = [
+		//	'500' => '2.8', 
+		//	'1000' => '2.2' 
+		//];
+		
+		$resultPrice = (int)$product_price;
+		
+		if($priceSteps){
+			$maxStep = (int)max(array_keys($priceSteps));
 
-		$resultPrice = $product_price;
-		
-		if($product_price < 1000){
-			foreach($priceSteps as $step_price => $ratio){
-				if($product_price < $step_price){
-					$resultPrice = $resultPrice * $ratio;
-					break;
-				}	
-			}				
+			if($product_price < $maxStep){
+				foreach($priceSteps as $startValueInRub => $ratio){
+					if($product_price < (int)$startValueInRub){
+						$resultPrice = $resultPrice * (float)$ratio;
+						break;
+					}	
+				}				
+			}
 		}
 		
 		//Добавляем общую наценку, округляем до 10 руб.
