@@ -79,40 +79,15 @@
   
 </div>
 
-<style>
-	.discount_step__box {
-		display: flex;
-		flex-direction: column;
-		justify-content: start;
-		align-items: start;
-		gap: 20px;
-	}
-	.discount_step__item {
-		display: flex;
-		flex-direction: row;
-		justify-content: space-between;
-		align-items: center;
-		gap: 20px;
-	}
-	.discount_step__item > div {
-		display: flex;
-		flex-direction: row;
-		justify-content: start;
-		justify-content: space-between;
-		align-items: center;
-		gap: 10px;
-	}
-</style>
-
 <script>
 document.addEventListener("DOMContentLoaded", (event) => {
   	document.querySelectorAll('.btn_remove_step').forEach((btn) => 
 	{	
 		btn.addEventListener('click', async () => {
 			btn.disabled = true;
-			const stepKeyValue = document.querySelector('#' + btn.dataset.for).value;
+			const stepKeyValue = parseInt(document.querySelector('#' + btn.dataset.for).value);
 
-			const res = await fetch('<?php echo html_entity_decode($remove_step_uri); ?>&key_to_delete=1000', {
+			const res = await fetch('<?php echo html_entity_decode($remove_step_uri); ?>&key_to_delete=' + stepKeyValue, {
 				method: "POST"
 			});
 			
