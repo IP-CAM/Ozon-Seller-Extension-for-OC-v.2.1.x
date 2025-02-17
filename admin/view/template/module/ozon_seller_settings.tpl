@@ -26,11 +26,11 @@
 				<div class="discount_step__item">
 					<div class="discount_step__min_border">
 						<label for="step_key<?php echo $i;?>">Если цена менее (руб.)</label>
-						<input type="number" step="10" value="<?php echo $step; ?>" class="form-control" name="step_key<?php echo $i;?>" id="step_key<?php echo $i;?>"></input>
+						<input type="number" readonly step="10" value="<?php echo $step; ?>" class="form-control" name="step_key<?php echo $i;?>" id="step_key<?php echo $i;?>"></input>
 					</div>
 					<div class="discount_step__ratio">
 						<label for="step_value<?php echo $i;?>">То коэффициент</label>
-						<input type="number" step="0.1" value="<?php echo $ratio; ?>" class="form-control" name="step_value<?php echo $i;?>" id="step_value<?php echo $i;?>"></input>
+						<input type="number" readonly step="0.1" value="<?php echo $ratio; ?>" class="form-control" name="step_value<?php echo $i;?>" id="step_value<?php echo $i;?>"></input>
 					</div>
 					<div class="discount_step__remove">
 						<button type="button" class="btn btn-sm btn_remove_step" data-for="step_key<?php echo $i;?>">Убрать</button>
