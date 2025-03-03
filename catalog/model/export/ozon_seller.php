@@ -22,5 +22,21 @@ class ModelExportOzonSeller extends Model {
 		
 		return $query->rows;
 	}
+
+	public function getDirectDiscounts(){
+
+		$sql = "SELECT * FROM `oc_product_ozon_discount`";
+		$query = $this->db->query($sql);
+
+		if($query->rows){
+			$items = [];
+			foreach($query->rows as $row){
+				$items['PSM-' . $row['product_id']] = $row['discount'];
+			}
+			return $items;
+		}
+		
+		return [];
+	}
 }
 ?>

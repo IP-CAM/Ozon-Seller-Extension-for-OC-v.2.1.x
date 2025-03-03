@@ -14,6 +14,7 @@ class ControllerFeedOzonSeller extends Controller {
 		$priceSteps = isset($settings['ozon_seller_discount_steps']) ? $settings['ozon_seller_discount_steps'] : [];
 
 		$products = $this->model_export_ozon_seller->getProducts($allowedStocksIds);
+		$directDiscounts = $this->model_export_ozon_seller->getDirectDiscounts();
 		
 		$out = '<?xml version="1.0" encoding="UTF-8"?>' . $this->eol;
 		$out .= '<yml_catalog date="' . date('Y-m-d H:i') . '">'. $this->eol;
@@ -26,8 +27,11 @@ class ControllerFeedOzonSeller extends Controller {
 			$quantity = $product['quantity'];
 
 			if($offer_id){
-				$out .= '<offer id="' . $offer_id . '">'. $this->eol;	
-				$price = $this->ApplyMinimumPriceMultiplierOptions($product['price'], $discount_percent, $priceSteps);				
+				$out .= '<offer id="' . $offer_id . '">'. $this->eol;
+
+				$currentDiscount = (array_key_exists($product['shopSku'], $directDiscounts) && $directDiscounts[$product['shopSku']]) ? $directDiscounts[$product['shopSku']] : $discount_percent;
+
+				$price = $this->ApplyDiscounts($product['price'], $currentDiscount, $priceSteps);				
 				$out .= '<price>' . $price . '</price>'. $this->eol;
 				$out .= '<outlets>'. $this->eol;
 				$out .= '<outlet instock="' . $quantity . '" warehouse_name="'.$stockName.'"></outlet>'. $this->eol;			
@@ -46,7 +50,7 @@ class ControllerFeedOzonSeller extends Controller {
 		$this->response->setOutput($out);
 	}
 	
-	function ApplyMinimumPriceMultiplierOptions($product_price, $discount_percent, $priceSteps){
+	function ApplyDiscounts($product_price, $discount_percent, $priceSteps){
 		
 		//Пример priceSteps
 		//$priceSteps = [
