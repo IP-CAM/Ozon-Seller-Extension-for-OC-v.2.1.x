@@ -76,6 +76,28 @@ class ControllerFeedOzonSeller extends Controller {
 		//Добавляем общую наценку, округляем до 10 руб.
 		$resultPrice = (int)(ceil((float)$resultPrice * ((100.0 + (float)$discount_percent)/100.0) / 10) * 10);
 		
+		$resultPrice = max($resultPrice, 0);
+		
 		return $resultPrice;
+	}
+	
+	public function single_product_hint(){
+		if ($this->request->server['REQUEST_METHOD'] == 'POST'){	
+			$this->load->model('setting/setting');
+			$settings = $this->model_setting_setting->getSetting('ozon_seller');
+			$priceSteps = isset($settings['ozon_seller_discount_steps']) ? $settings['ozon_seller_discount_steps'] : [];
+			$regularDiscount = isset($settings['ozon_seller_margin']) ? (int)$settings['ozon_seller_margin'] : '0';
+			
+			$inputJSON = file_get_contents('php://input');
+			$input = json_decode($inputJSON, TRUE); //convert JSON into array
+			
+			$discount = $input['ozon_seller_discount'] == 'regular_discount' ?  $regularDiscount : (int)$input['ozon_seller_discount'];
+			$price = (int)$input['product_price'];
+			
+			$hintValue = $this->ApplyDiscounts($price, $discount, $priceSteps);
+	
+			header('Content-Type: application/json');
+			echo json_decode($hintValue);
+		}
 	}
 }
