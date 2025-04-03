@@ -82,14 +82,20 @@ class ControllerFeedOzonSeller extends Controller {
 	}
 	
 	public function single_product_hint(){
-		if ($this->request->server['REQUEST_METHOD'] == 'POST'){	
+		if ($this->request->server['REQUEST_METHOD'] == 'POST'){
+			$inputJSON = file_get_contents('php://input');
+			$input = json_decode($inputJSON, TRUE); //convert JSON into array
+			if(!isset($input['req_token']) || $input['req_token'] != '3b41a47c-4f5a-44c4-9276-30ee551ef3d7'){
+				http_response_code(401);
+				exit();
+			}
+			
 			$this->load->model('setting/setting');
 			$settings = $this->model_setting_setting->getSetting('ozon_seller');
 			$priceSteps = isset($settings['ozon_seller_discount_steps']) ? $settings['ozon_seller_discount_steps'] : [];
 			$regularDiscount = isset($settings['ozon_seller_margin']) ? (int)$settings['ozon_seller_margin'] : '0';
 			
-			$inputJSON = file_get_contents('php://input');
-			$input = json_decode($inputJSON, TRUE); //convert JSON into array
+
 			
 			$discount = $input['ozon_seller_discount'] == 'regular_discount' ?  $regularDiscount : (int)$input['ozon_seller_discount'];
 			$price = (int)$input['product_price'];
